@@ -9,3 +9,81 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  @@map("users")
+}
+
+model TeacherDiscipline {
+  id           Int        @id @default(autoincrement())
+  teacherId    Int
+  disciplineId Int
+  createdAt    DateTime   @default(now()) @db.Timestamptz()
+  Teacher      Teacher    @relation(fields: [teacherId], references: [id])
+  Discipline   Discipline @relation(fields: [disciplineId], references: [id])
+
+  Test Test[]
+
+  @@map("teachersDisciplines")
+}
+
+model Teacher {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  TeacherDiscipline TeacherDiscipline[]
+
+  @@map("teachers")
+}
+
+model Term {
+  id        Int      @id @default(autoincrement())
+  number    Int      @unique
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  Discipline Discipline[]
+
+  @@map("terms")
+}
+
+model Discipline {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  termId    Int
+  createdAt DateTime @default(now()) @db.Timestamptz()
+  Term      Term     @relation(fields: [termId], references: [id])
+
+  TeacherDiscipline TeacherDiscipline[]
+
+  @@map("disciplines")
+}
+
+model Test {
+  id                   Int      @id @default(autoincrement())
+  name                 String
+  pdfURI               String
+  categoryId           Int
+  teachersDisciplineId Int
+  createdAt            DateTime @default(now()) @db.Timestamptz()
+  Category             Category @relation(fields: [categoryId], references: [id])
+
+  TeacherDiscipline TeacherDiscipline @relation(fields: [teachersDisciplineId], references: [id])
+
+  @@map("tests")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz()
+
+  Test Test[]
+
+  @@map("categories")
+}
