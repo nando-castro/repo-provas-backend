@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
 
 export const hashPassword = (password: string) => {
-  const result = bcrypt.hashSync(password, 10);
+  const NUM_CRYPT = Number(process.env.NUM_CRYPT);
+  const result = bcrypt.hashSync(password, NUM_CRYPT);
   return result;
 };
 
