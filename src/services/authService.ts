@@ -1,3 +1,4 @@
+import { unprocessableEntity } from "./../utils/errorUtils";
 import jwt from "jsonwebtoken";
 import { TypeUserData } from "./../types/UserTypes";
 import * as authRepository from "../repositories/authRepository";
@@ -14,8 +15,10 @@ export async function registerUser(data: TypeUserData) {
     throw conflictError(`User already registered`);
   }
 
-  const NUM_CRYPT = Number(process.env.NUM_CRYPT);
+  if (data.password !== data.passwordConfirm)
+    throw unprocessableEntity(`Passwords not equals`);
 
+  const NUM_CRYPT = Number(process.env.NUM_CRYPT);
   const passcrypt = bcrypt.hashSync(data.password, NUM_CRYPT);
   const dataUser = {
     email: data.email,
