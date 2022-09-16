@@ -24,4 +24,13 @@ describe("Testa a rota POST /signup", () => {
     expect(result.status).toBe(201);
     expect(createUser).not.toBeNull();
   });
+
+  it("Deve retornar 409, ao tentar cadastrar um email que ja exista", async () => {
+    const userRegister = await registerFactory();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const result = await supertest(app).post(`/signup`).send(userRegister);
+
+    expect(result.status).toBe(409);
+  });
 });
