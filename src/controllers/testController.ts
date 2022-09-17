@@ -12,7 +12,6 @@ export async function createTest(req: Request, res: Response) {
   // } = req.body as TypeTestData;
 
   const dataTest = res.locals.test;
-  console.log(dataTest);
   await testService.createTest(dataTest);
   res.sendStatus(201);
 }
