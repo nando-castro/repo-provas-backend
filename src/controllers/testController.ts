@@ -8,11 +8,6 @@ export async function createTest(req: Request, res: Response) {
   res.sendStatus(201);
 }
 
-export async function getAllTests(req: Request, res: Response) {
-  const tests = await testService.getAllTests();
-  res.status(200).send(tests);
-}
-
 export async function getAllTestByTeacherOrDiscipline(
   req: Request,
   res: Response
@@ -26,4 +21,6 @@ export async function getAllTestByTeacherOrDiscipline(
     const tests = await testService.getTestByDisciplines();
     return res.status(200).send(tests);
   }
+  const tests = await testService.getAllTests();
+  res.status(200).send(tests);
 }
