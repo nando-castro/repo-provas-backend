@@ -31,3 +31,7 @@ export async function createTest(data: TypeTestData) {
 
   await testRepository.insert(dataTest);
 }
+
+export async function getAllTests() {
+  return await testRepository.findAll();
+}

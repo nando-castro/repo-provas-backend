@@ -22,3 +22,22 @@ export async function findByTeacherDisciplineId(
   });
   return rows;
 }
+
+export async function findAll() {
+  const rows = await client.test.findMany({
+    include: {
+      Category: {},
+      TeacherDiscipline: {
+        include: {
+          Discipline: {
+            include: {
+              Term: {},
+            },
+          },
+          Teacher: {},
+        },
+      },
+    },
+  });
+  return rows;
+}
