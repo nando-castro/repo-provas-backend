@@ -12,6 +12,6 @@ testRouter.post(
   schemaValidateMiddleware(testSchema),
   testController.createTest
 );
-testRouter.get("/test/view", testController.getAllTests);
+testRouter.get("/test/view", testController.getAllTestByTeacherOrDiscipline);
 
 export { testRouter };

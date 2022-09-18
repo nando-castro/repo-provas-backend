@@ -4,6 +4,7 @@ import * as testRepository from "../repositories/testRepository";
 import * as categoryRepository from "../repositories/categoryRepository";
 import * as disciplineRepository from "../repositories/disciplineRepository";
 import * as teacherRepository from "../repositories/teacherRepository";
+import * as termRepository from "../repositories/termRepository";
 
 export async function createTest(data: TypeTestData) {
   const { categoryId, disciplineId, teacherId } = data;
@@ -38,5 +39,10 @@ export async function getAllTests() {
 
 export async function getTestByTeachers() {
   const tests = await teacherRepository.findTestByTeacher();
+  return tests;
+}
+
+export async function getTestByDisciplines() {
+  const tests = await termRepository.findTestByTerm();
   return tests;
 }
