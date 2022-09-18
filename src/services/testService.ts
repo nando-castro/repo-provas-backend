@@ -35,3 +35,8 @@ export async function createTest(data: TypeTestData) {
 export async function getAllTests() {
   return await testRepository.findAll();
 }
+
+export async function getTestByTeachers() {
+  const tests = await teacherRepository.findTestByTeacher();
+  return tests;
+}

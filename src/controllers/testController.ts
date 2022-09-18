@@ -20,3 +20,14 @@ export async function getAllTests(req: Request, res: Response) {
   const tests = await testService.getAllTests();
   res.status(200).send(tests);
 }
+
+export async function getAllTestByTeacherOrDiscipline(
+  req: Request,
+  res: Response
+) {
+  const { group } = req.query;
+  if (group === "teachers") {
+    const tests = await testService.getTestByTeachers();
+    return tests;
+  }
+}

@@ -21,3 +21,18 @@ export async function findByDiscipline(disciplineId: number) {
   });
   return rows;
 }
+
+export async function findTestByTeacher() {
+  const rows = await client.teacherDiscipline.findMany({
+    include: {
+      Teacher: {},
+      Discipline: {},
+      Test: {
+        include: {
+          Category: {},
+        },
+      },
+    },
+  });
+  return rows;
+}
