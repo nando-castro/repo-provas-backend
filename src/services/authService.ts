@@ -26,6 +26,7 @@ export async function registerUser(data: TypeUserData) {
   } as TypeUserData;
   await authRepository.insert(dataUser);
 }
+
 export async function loginUser(data: TypeUserData) {
   const userExists = await authRepository.findByEmail(data.email);
   if (!userExists) {
