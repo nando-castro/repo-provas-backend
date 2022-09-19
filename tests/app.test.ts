@@ -177,3 +177,59 @@ describe("Testa a rota de criar novas provas POST /tests", () => {
     expect(result.status).toBe(404);
   });
 });
+describe("Testa a rota GET /tests", () => {
+  it("Deve retornar status code 200 e todos tests agrupados por teachers", async () => {
+    const userRegister = await userFactory.registerUser();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const userData = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
+
+    const response = await supertest(app).post(`/signin`).send({
+      email: userData.email,
+      password: userData.password,
+    });
+    token = response.body.token;
+    const testData = await testFactory.createTest();
+
+    await supertest(app)
+      .post(`/test/create`)
+      .send(testData)
+      .set("Authorization", `Bearer ${token}`);
+
+    const result = await supertest(app)
+      .get(`/test/view?group=teachers`)
+      .set("Authorization", `${token}`);
+    expect(result.status).toBe(200);
+    expect(result.body).not.toBeNull();
+  });
+  it("Deve retornar status code 200 e todos tests agrupados por disciplines", async () => {
+    const userRegister = await userFactory.registerUser();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const userData = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
+
+    const response = await supertest(app).post(`/signin`).send({
+      email: userData.email,
+      password: userData.password,
+    });
+    token = response.body.token;
+    const testData = await testFactory.createTest();
+
+    await supertest(app)
+      .post(`/test/create`)
+      .send(testData)
+      .set("Authorization", `Bearer ${token}`);
+
+    const result = await supertest(app)
+      .get(`/test/view?group=disciplines`)
+      .set("Authorization", `${token}`);
+    expect(result.status).toBe(200);
+    expect(result.body).not.toBeNull();
+  });
+});
