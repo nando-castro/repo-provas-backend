@@ -2,17 +2,23 @@ import client from "../src/databases/database";
 
 async function main() {
   // módulos do curso
-  const terms = [];
-  for (let i = 0; i !== 6; i++) {
-    terms.push({ number: i });
-  }
-  terms.map(async (term) => {
-    await client.term.upsert({
-      where: { number: term.number },
-      update: {},
-      create: term,
-    });
-  });
+  // const terms = [];
+  // for (let i = 0; i !== 6; i++) {
+  //   terms.push({ number: i });
+  // }
+  // terms.map(async (term) => {
+  //   await client.term.upsert({
+  //     where: { number: term.number },
+  //     update: {},
+  //     create: term,
+  //   });
+  // });
+  await client.$queryRaw`INSERT INTO terms ("number") VALUES (1)`;
+  await client.$queryRaw`INSERT INTO terms ("number") VALUES (2)`;
+  await client.$queryRaw`INSERT INTO terms ("number") VALUES (3)`;
+  await client.$queryRaw`INSERT INTO terms ("number") VALUES (4)`;
+  await client.$queryRaw`INSERT INTO terms ("number") VALUES (5)`;
+  await client.$queryRaw`INSERT INTO terms ("number") VALUES (6)`;
 
   // tipos de provas
   await client.$queryRaw`INSERT INTO categories ("name") VALUES ('Projeto')`;

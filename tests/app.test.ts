@@ -2,17 +2,18 @@ import app from "../src/index";
 import supertest from "supertest";
 import client from "../src/databases/database";
 import userFactory from "./factories/userFactory";
-import { tokenFactory } from "./factories/tokenFactory";
 import testFactory from "./factories/testFactory";
+
+let token: string;
 
 beforeEach(async () => {
   await client.$executeRaw`TRUNCATE TABLE "users"`;
   await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "tests" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "disciplines" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "teachersDisciplines" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "terms" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "teachers" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "tests" CASCADE`;
 });
 
 beforeAll(async () => {
@@ -46,17 +47,18 @@ describe("Testa a rota POST /signup", () => {
 describe("Testa a rota POST /signin", () => {
   it("Deve retornar 200, se usuario logado corretamente e retorna um token", async () => {
     const userRegister = await userFactory.registerUser();
-    const user = await userFactory.createLogin(
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const userData = await userFactory.createLogin(
       userRegister.email,
       userRegister.password
     );
 
     const result = await supertest(app).post(`/signin`).send({
-      email: user.email,
-      password: user.password,
+      email: userData.email,
+      password: userData.password,
     });
-
-    const token = await tokenFactory(user.id);
+    token = result.body.token;
     expect(result.status).toBe(200);
     expect(token).not.toBeNull();
   });
@@ -75,27 +77,92 @@ describe("Testa a rota de criar novas provas POST /tests", () => {
     const userRegister = await userFactory.registerUser();
 
     await supertest(app).post(`/signup`).send(userRegister);
-    const user = await userFactory.createLogin(
+    const userData = await userFactory.createLogin(
       userRegister.email,
       userRegister.password
     );
 
-    await supertest(app).post(`/signin`).send({
-      email: user.email,
-      password: user.password,
+    const response = await supertest(app).post(`/signin`).send({
+      email: userData.email,
+      password: userData.password,
     });
-    await supertest(app).post(`/signin`).send(user);
-    const token = await tokenFactory(user.id);
-    const testData = await testFactory.createTest(1, 1);
+    token = response.body.token;
+    const testData = await testFactory.createTest();
 
     const result = await supertest(app)
       .post(`/test/create`)
       .send(testData)
-      .set(`Authorization`, `Bearer ${token}`);
+      .set("Authorization", `Bearer ${token}`);
     const testCreate = await client.test.findFirst({
       where: { name: testData.name },
     });
     expect(result.status).toBe(201);
     expect(testCreate).not.toBeNull();
+  });
+  it("Deve retornar 404, se criar category nao existir", async () => {
+    const userRegister = await userFactory.registerUser();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const userData = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
+
+    const response = await supertest(app).post(`/signin`).send({
+      email: userData.email,
+      password: userData.password,
+    });
+    token = response.body.token;
+    const testData = await testFactory.createTestWrongCategory();
+
+    const result = await supertest(app)
+      .post(`/test/create`)
+      .send(testData)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toBe(404);
+  });
+  it("Deve retornar 404, se professor nao existir", async () => {
+    const userRegister = await userFactory.registerUser();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const userData = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
+
+    const response = await supertest(app).post(`/signin`).send({
+      email: userData.email,
+      password: userData.password,
+    });
+    token = response.body.token;
+    const testData = await testFactory.createTestWrongTeacher();
+
+    const result = await supertest(app)
+      .post(`/test/create`)
+      .send(testData)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toBe(404);
+  });
+  it("Deve retornar 404, se combinacao professor disciplina nao existir", async () => {
+    const userRegister = await userFactory.registerUser();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const userData = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
+
+    const response = await supertest(app).post(`/signin`).send({
+      email: userData.email,
+      password: userData.password,
+    });
+    token = response.body.token;
+    const testData = await testFactory.createTestWrongTeacherDiscipline();
+
+    const result = await supertest(app)
+      .post(`/test/create`)
+      .send(testData)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toBe(404);
   });
 });

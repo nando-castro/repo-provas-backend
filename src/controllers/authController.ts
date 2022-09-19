@@ -11,6 +11,6 @@ export async function register(req: Request, res: Response) {
 
 export async function login(req: Request, res: Response) {
   const userData: TypeUserData = req.body;
-  const token = await authService.loginUser(userData);
-  res.status(200).send(token);
+  const token: string = await authService.loginUser(userData);
+  res.status(200).send({ token });
 }
