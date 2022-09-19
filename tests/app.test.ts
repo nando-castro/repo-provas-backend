@@ -37,6 +37,14 @@ describe("Testa a rota POST /signup", () => {
 
     expect(result.status).toBe(409);
   });
+  it("Deve retornar 422, ao tentar cadastrar um email com senhas distintas", async () => {
+    const userRegister = await userFactory.registerUser();
+    const userDataRegister = { ...userRegister, passwordConfirm: "test123" };
+
+    const result = await supertest(app).post(`/signup`).send(userDataRegister);
+
+    expect(result.status).toBe(422);
+  });
 });
 
 describe("Testa a rota POST /signin", () => {
@@ -64,6 +72,14 @@ describe("Testa a rota POST /signin", () => {
     };
     const result = await supertest(app).post(`/signin`).send(userLogin);
     expect(result.status).toBe(404);
+  });
+  it("Deve retornar 422, se usuario digitar email ou senha incorretos", async () => {
+    const userLogin = {
+      email: "testtest.com",
+      password: "12345",
+    };
+    const result = await supertest(app).post(`/signin`).send(userLogin);
+    expect(result.status).toBe(422);
   });
 });
 
