@@ -17,27 +17,29 @@ const database_1 = __importDefault(require("../databases/database"));
 function findTestByTerm() {
     return __awaiter(this, void 0, void 0, function* () {
         const rows = yield database_1.default.term.findMany({
-            orderBy: { number: "asc" },
-            include: {
+            select: {
+                id: true,
+                number: true,
                 Discipline: {
-                    include: {
+                    select: {
+                        id: true,
+                        name: true,
+                        Term: true,
                         TeacherDiscipline: {
-                            where: {
+                            select: {
+                                id: true,
+                                Discipline: { select: { id: true, name: true } },
+                                Teacher: { select: { id: true, name: true } },
                                 Test: {
-                                    some: { name: {} },
-                                },
-                            },
-                            include: {
-                                Discipline: {},
-                                Teacher: {},
-                                Test: {
-                                    include: {
-                                        Category: {},
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        pdfURI: true,
+                                        Category: true,
                                     },
                                 },
                             },
                         },
-                        Term: {},
                     },
                 },
             },

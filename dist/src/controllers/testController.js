@@ -47,11 +47,11 @@ function getAllTestByTeacherOrDiscipline(req, res) {
         const { group } = req.query;
         if (group === "teachers") {
             const tests = yield testService.getTestByTeachers();
-            return res.status(200).send(tests);
+            return res.status(200).send({ tests });
         }
         if (group === "disciplines") {
             const tests = yield testService.getTestByDisciplines();
-            return res.status(200).send(tests);
+            return res.status(200).send({ tests });
         }
         const tests = yield testService.getAllTests();
         res.status(200).send(tests);

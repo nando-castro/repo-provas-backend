@@ -2,27 +2,29 @@ import client from "../databases/database";
 
 export async function findTestByTerm() {
   const rows = await client.term.findMany({
-    orderBy: { number: "asc" },
-    include: {
+    select: {
+      id: true,
+      number: true,
       Discipline: {
-        include: {
+        select: {
+          id: true,
+          name: true,
+          Term: true,
           TeacherDiscipline: {
-            where: {
+            select: {
+              id: true,
+              Discipline: { select: { id: true, name: true } },
+              Teacher: { select: { id: true, name: true } },
               Test: {
-                some: { name: {} },
-              },
-            },
-            include: {
-              Discipline: {},
-              Teacher: {},
-              Test: {
-                include: {
-                  Category: {},
+                select: {
+                  id: true,
+                  name: true,
+                  pdfURI: true,
+                  Category: true,
                 },
               },
             },
           },
-          Term: {},
         },
       },
     },

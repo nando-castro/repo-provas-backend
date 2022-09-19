@@ -45,12 +45,16 @@ exports.findByDiscipline = findByDiscipline;
 function findTestByTeacher() {
     return __awaiter(this, void 0, void 0, function* () {
         const rows = yield database_1.default.teacherDiscipline.findMany({
-            include: {
-                Teacher: {},
-                Discipline: {},
+            select: {
+                id: true,
+                Discipline: { include: { TeacherDiscipline: true, Term: true } },
+                Teacher: true,
                 Test: {
-                    include: {
-                        Category: {},
+                    select: {
+                        id: true,
+                        name: true,
+                        pdfURI: true,
+                        Category: true,
                     },
                 },
             },

@@ -24,12 +24,16 @@ export async function findByDiscipline(disciplineId: number) {
 
 export async function findTestByTeacher() {
   const rows = await client.teacherDiscipline.findMany({
-    include: {
-      Teacher: {},
-      Discipline: {},
+    select: {
+      id: true,
+      Discipline: { include: { TeacherDiscipline: true, Term: true } },
+      Teacher: true,
       Test: {
-        include: {
-          Category: {},
+        select: {
+          id: true,
+          name: true,
+          pdfURI: true,
+          Category: true,
         },
       },
     },
