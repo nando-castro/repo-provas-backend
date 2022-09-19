@@ -1,17 +1,17 @@
 import app from "../src/index";
 import supertest from "supertest";
 import client from "../src/databases/database";
-import registerFactory from "./factories/registerFactory";
+import userFactory from "./factories/userFactory";
 import { tokenFactory } from "./factories/tokenFactory";
-import { testFactory } from "./factories/testFactory";
+import testFactory from "./factories/testFactory";
 
 beforeEach(async () => {
   await client.$executeRaw`TRUNCATE TABLE "users"`;
   await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "tests" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "disciplines" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "teachersDisciplines" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "terms" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "teachers" CASCADE`;
 });
 
@@ -21,7 +21,7 @@ beforeAll(async () => {
 
 describe("Testa a rota POST /signup", () => {
   it("Deve retornar 201, se cadastrado um usuario no formato correto", async () => {
-    const userRegister = await registerFactory();
+    const userRegister = await userFactory.registerUser();
 
     const result = await supertest(app).post(`/signup`).send(userRegister);
 
@@ -34,7 +34,7 @@ describe("Testa a rota POST /signup", () => {
   });
 
   it("Deve retornar 409, ao tentar cadastrar um email que ja exista", async () => {
-    const userRegister = await registerFactory();
+    const userRegister = await userFactory.registerUser();
 
     await supertest(app).post(`/signup`).send(userRegister);
     const result = await supertest(app).post(`/signup`).send(userRegister);
@@ -44,23 +44,21 @@ describe("Testa a rota POST /signup", () => {
 });
 
 describe("Testa a rota POST /signin", () => {
-  it("Deve retornar 200, se usuario logado corretamente", async () => {
-    const userRegister = await registerFactory();
-    await supertest(app).post(`/signup`).send(userRegister);
-    const createUser = await client.user.findUnique({
-      where: { email: userRegister.email },
-    });
-    const userLogin = {
-      email: userRegister.email,
-      password: userRegister.password,
-    };
+  it("Deve retornar 200, se usuario logado corretamente e retorna um token", async () => {
+    const userRegister = await userFactory.registerUser();
+    const user = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
 
-    const result = await supertest(app).post(`/signin`).send(userLogin);
-    if (createUser) {
-      const token = await tokenFactory(createUser.id);
-      expect(result.status).toBe(200);
-      expect(token).not.toBeNull();
-    }
+    const result = await supertest(app).post(`/signin`).send({
+      email: user.email,
+      password: user.password,
+    });
+
+    const token = await tokenFactory(user.id);
+    expect(result.status).toBe(200);
+    expect(token).not.toBeNull();
   });
   it("Deve retornar 404, se usuario nao existir", async () => {
     const userLogin = {
@@ -74,24 +72,23 @@ describe("Testa a rota POST /signin", () => {
 
 describe("Testa a rota de criar novas provas POST /tests", () => {
   it("Deve retornar 201, se criar prova sucesso", async () => {
-    const userRegister = await registerFactory();
+    const userRegister = await userFactory.registerUser();
 
     await supertest(app).post(`/signup`).send(userRegister);
-    const createUser = await client.user.findUnique({
-      where: { email: userRegister.email },
-    });
-    const userLogin = {
-      email: userRegister.email,
-      password: userRegister.password,
-    };
+    const user = await userFactory.createLogin(
+      userRegister.email,
+      userRegister.password
+    );
 
-    let result = await supertest(app).post(`/signin`).send(userLogin);
-    const testData = await testFactory(1, 1);
-    let token;
-    if (createUser) {
-      token = await tokenFactory(createUser.id);
-    }
-    result = await supertest(app)
+    await supertest(app).post(`/signin`).send({
+      email: user.email,
+      password: user.password,
+    });
+    await supertest(app).post(`/signin`).send(user);
+    const token = await tokenFactory(user.id);
+    const testData = await testFactory.createTest(1, 1);
+
+    const result = await supertest(app)
       .post(`/test/create`)
       .send(testData)
       .set(`Authorization`, `Bearer ${token}`);
