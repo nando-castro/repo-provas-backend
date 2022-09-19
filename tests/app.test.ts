@@ -3,9 +3,16 @@ import supertest from "supertest";
 import client from "../src/databases/database";
 import registerFactory from "./factories/registerFactory";
 import { tokenFactory } from "./factories/tokenFactory";
+import { testFactory } from "./factories/testFactory";
 
 beforeEach(async () => {
   await client.$executeRaw`TRUNCATE TABLE "users"`;
+  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "tests" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
+  await client.$executeRaw`TRUNCATE TABLE "teachers" CASCADE`;
 });
 
 beforeAll(async () => {
@@ -62,5 +69,36 @@ describe("Testa a rota POST /signin", () => {
     };
     const result = await supertest(app).post(`/signin`).send(userLogin);
     expect(result.status).toBe(404);
+  });
+});
+
+describe("Testa a rota de criar novas provas POST /tests", () => {
+  it("Deve retornar 201, se criar prova sucesso", async () => {
+    const userRegister = await registerFactory();
+
+    await supertest(app).post(`/signup`).send(userRegister);
+    const createUser = await client.user.findUnique({
+      where: { email: userRegister.email },
+    });
+    const userLogin = {
+      email: userRegister.email,
+      password: userRegister.password,
+    };
+
+    let result = await supertest(app).post(`/signin`).send(userLogin);
+    const testData = await testFactory(1, 1);
+    let token;
+    if (createUser) {
+      token = await tokenFactory(createUser.id);
+    }
+    result = await supertest(app)
+      .post(`/test/create`)
+      .send(testData)
+      .set(`Authorization`, `Bearer ${token}`);
+    const testCreate = await client.test.findFirst({
+      where: { name: testData.name },
+    });
+    expect(result.status).toBe(201);
+    expect(testCreate).not.toBeNull();
   });
 });
