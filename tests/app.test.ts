@@ -8,11 +8,6 @@ let token: string;
 
 beforeEach(async () => {
   await client.$executeRaw`TRUNCATE TABLE "users"`;
-  await client.$executeRaw`TRUNCATE TABLE "categories" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "disciplines" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "teachersDisciplines" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "terms" CASCADE`;
-  await client.$executeRaw`TRUNCATE TABLE "teachers" CASCADE`;
   await client.$executeRaw`TRUNCATE TABLE "tests" CASCADE`;
 });
 
